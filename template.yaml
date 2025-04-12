@@ -1,0 +1,65 @@
+# PROD TEMPLATE FOR EVA ADDENDUM ACTIVOS INTERNOS PRODUCTIVE
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+
+  EvaAddendumAPI:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: wsgi.lambda_handler
+      Runtime: python3.11
+      CodeUri: root-platform
+      Timeout: 30
+      Environment:
+        Variables:
+          CUSTOM_API_ERP_API_KEY: bb6txhROpA3fV6tjDY4563UOCAu7Snzw5BNx0czf
+          ERP_AUTH_TOKEN: c927f756e6eb42459b93b1f3301b6e68
+          ERP_APP_TOKEN: 87452890|6484502060e844cdba2cc6d5ab8c02a2
+          DATABASE_URL: postgresql+psycopg2://eva_admin:G3GNyk2GdR47@eva-prod-db.caj0o5x6fiuv.us-east-1.rds.amazonaws.com/eva-addendum
+          VINCULATE_API_URL: https://api-vinculate.atlas.com.co/prod/back/api/create-transaction
+          VINCULATE_API_TOKEN: 914|x3XjmnSlKK6IA9DbwuIMXCPkFOGonk9B5h2bDkOX
+          COGNITO_APP_CLIENT_ID: 1rk7hqq27evkesn9l8ujqc8ni3
+          COGNITO_USERPOOL_ID: us-east-1_89xVW3Cep
+      VpcConfig:
+        SubnetIds:
+          - subnet-a0502bc6
+        SecurityGroupIds:
+          - sg-07fec9f786194cd64
+      Events:
+        Api:
+          Type: Api 
+          Properties:
+            RestApiId: !Ref EvaAddendumApiGateway
+            Path: /{proxy+}
+            Method: ANY
+      Tags:
+        CostCenter: EVA-Addendum
+        Name: EvaAddendumAPI
+
+  EvaAddendumApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: eva-addendum-api-admin
+      StageName: prod
+      Tags:
+        CostCenter: EVA-Addendum
+        Name: EvaAddendumApiGateway
+
+  S3AdminAddendumFrontend:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: eva-addendum-admin-frontend
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: ObjectWriter
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      VersioningConfiguration:
+        Status: Enabled
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
